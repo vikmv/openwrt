@@ -1404,6 +1404,12 @@ wpa_supplicant_add_network() {
 					esac
 					append network_data "phase2=\"$phase2proto$auth\"" "$N$T"
 				;;
+				aka)
+					key_mgmt="WPA-EAP IEEE8021X"
+					append network_data "eap=AKA" "$N$T"
+					append network_data "pin=\"\"" "$N$T"
+					append network_data "pcsc=\"\"" "$N$T"
+				;;
 			esac
 			append network_data "eap=$(echo $eap_type | tr 'a-z' 'A-Z')" "$N$T"
 		;;

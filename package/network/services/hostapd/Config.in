@@ -9,6 +9,7 @@ config WPA_RFKILL_SUPPORT
 		   PACKAGE_wpa-supplicant-basic || \
 		   PACKAGE_wpa-supplicant-mini || \
 		   PACKAGE_wpa-supplicant-p2p || \
+		   PACKAGE_wpa-supplicant-pcsc-sim || \
 		   PACKAGE_wpad || \
 		   PACKAGE_wpad-openssl || \
 		   PACKAGE_wpad-wolfssl || \
@@ -17,7 +18,8 @@ config WPA_RFKILL_SUPPORT
 		   PACKAGE_wpad-basic-wolfssl || \
 		   PACKAGE_wpad-mini || \
 		   PACKAGE_wpad-mesh-openssl || \
-		   PACKAGE_wpad-mesh-wolfssl
+		   PACKAGE_wpad-mesh-wolfssl || \
+		   PACKAGE_wpad-pcsc-sim
 	default n
 
 config WPA_MSG_MIN_PRIORITY
@@ -30,6 +32,7 @@ config WPA_MSG_MIN_PRIORITY
 		   PACKAGE_wpa-supplicant-basic || \
 		   PACKAGE_wpa-supplicant-mini || \
 		   PACKAGE_wpa-supplicant-p2p || \
+		   PACKAGE_wpa-supplicant-pcsc-sim || \
 		   PACKAGE_wpad || \
 		   PACKAGE_wpad-openssl || \
 		   PACKAGE_wpad-wolfssl || \
@@ -38,7 +41,8 @@ config WPA_MSG_MIN_PRIORITY
 		   PACKAGE_wpad-basic-wolfssl || \
 		   PACKAGE_wpad-mini || \
 		   PACKAGE_wpad-mesh-openssl || \
-		   PACKAGE_wpad-mesh-wolfssl
+		   PACKAGE_wpad-mesh-wolfssl || \
+		   PACKAGE_wpad-pcsc-sim
 	default 3
 	help
 	  Useful values are:

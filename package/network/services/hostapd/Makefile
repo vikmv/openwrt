@@ -55,14 +55,20 @@ LOCAL_AND_LIB_VARIANT=$(patsubst hostapd-%,%,\
 LOCAL_VARIANT=$(patsubst %-internal,%,\
 	      $(patsubst %-openssl,%,\
 	      $(patsubst %-wolfssl,%,\
+	      $(patsubst %-pcsc-sim,%,\
 	      $(LOCAL_AND_LIB_VARIANT)\
-	      )))
+	      ))))
 
 SSL_VARIANT=$(strip \
 		$(if $(findstring openssl,$(LOCAL_AND_LIB_VARIANT)),openssl,\
 		$(if $(findstring wolfssl,$(LOCAL_AND_LIB_VARIANT)),wolfssl,\
 		internal\
 		)))
+
+PCSC_SIM_VARIANT=$(strip \
+    $(if $(findstring pcsc-sim,$(LOCAL_AND_LIB_VARIANT)),pcsc-sim,\
+    none\
+    ))
 
 CONFIG_VARIANT:=$(LOCAL_VARIANT)
 ifeq ($(LOCAL_VARIANT),mesh)
@@ -133,6 +139,11 @@ endif
 ifdef CONFIG_USE_GLIBC
   TARGET_LDFLAGS += -lrt
   TARGET_LDFLAGS_C += -lrt
+endif
+
+ifeq ($(PCSC_SIM_VARIANT),pcsc-sim)
+  TARGET_LDFLAGS += -lpcsclite
+  DRIVER_MAKEOPTS += CONFIG_PCSC=y CONFIG_EAP_SIM=y CONFIG_EAP_AKA=y CONFIG_EAP_AKA_PRIME=y
 endif
 
 DRV_DEPENDS:=+PACKAGE_kmod-cfg80211:libnl-tiny
@@ -222,6 +233,16 @@ define Package/hostapd-mini/description
  This package contains a minimal IEEE 802.1x/WPA Authenticator (WPA-PSK only).
 endef
 
+define Package/hostapd-pcsc-sim
+$(call Package/hostapd/Default,$(1))
+  TITLE+= (PCSC-SIM)
+  VARIANT:=full-internal-pcsc-sim
+  DEPENDS+=+libpcsclite
+endef
+
+define Package/hostapd-pcsc-sim/description
+ This package additionally contains PCSC and SIM (EAP) authentication
+endef
 
 define Package/wpad/Default
   SECTION:=net
@@ -336,6 +357,15 @@ endef
 
 Package/wpad-mesh-wolfssl/description = $(Package/wpad-mesh/description)
 
+define Package/wpad-pcsc-sim
+$(call Package/wpad/Default,$(1))
+  TITLE+= (pcsc-sim)
+  VARIANT:=wpad-full-internal-pcsc-sim
+  DEPENDS+=+libpcsclite
+endef
+define Package/wpad-pcsc-sim/description
+ This package additionally contains PCSC and SIM (EAP) authentication
+endef
 
 define Package/wpa-supplicant/Default
   SECTION:=net
@@ -411,6 +441,12 @@ define Package/wpa-supplicant-mini
 $(call Package/wpa-supplicant/Default,$(1))
   TITLE+= (minimal)
   VARIANT:=supplicant-mini
+endef
+
+define Package/wpa-supplicant-pcsc-sim
+$(call Package/wpa-supplicant/Default,$(1))
+  TITLE+= (PCSC-SIM)
+  VARIANT:=supplicant-full-internal-pcsc-sim
 endef
 
 
@@ -498,6 +534,7 @@ endef
 
 TARGET_CPPFLAGS := \
 	-I$(STAGING_DIR)/usr/include/libnl-tiny \
+	-I$(STAGING_DIR)/usr/include/PCSC \
 	-I$(PKG_BUILD_DIR)/src/crypto \
 	$(TARGET_CPPFLAGS) \
 	-DCONFIG_LIBNL20 \
@@ -614,6 +651,7 @@ Package/hostapd-basic-wolfssl/install = $(Package/hostapd/install)
 Package/hostapd-mini/install = $(Package/hostapd/install)
 Package/hostapd-openssl/install = $(Package/hostapd/install)
 Package/hostapd-wolfssl/install = $(Package/hostapd/install)
+Package/hostapd-pcsc-sim/install = $(Package/hostapd/install)
 
 ifneq ($(LOCAL_TYPE),supplicant)
   define Package/hostapd-utils/install
@@ -637,6 +675,7 @@ Package/wpad-openssl/install = $(Package/wpad/install)
 Package/wpad-wolfssl/install = $(Package/wpad/install)
 Package/wpad-mesh-openssl/install = $(Package/wpad/install)
 Package/wpad-mesh-wolfssl/install = $(Package/wpad/install)
+Package/wpad-pcsc-sim/install = $(Package/wpad/install)
 
 define Package/wpa-supplicant/install
 	$(call Install/supplicant,$(1))
@@ -649,6 +688,7 @@ Package/wpa-supplicant-openssl/install = $(Package/wpa-supplicant/install)
 Package/wpa-supplicant-wolfssl/install = $(Package/wpa-supplicant/install)
 Package/wpa-supplicant-mesh-openssl/install = $(Package/wpa-supplicant/install)
 Package/wpa-supplicant-mesh-wolfssl/install = $(Package/wpa-supplicant/install)
+Package/wpa-supplicant-pcsc-sim/install = $(Package/wpa-supplicant/install)
 
 ifneq ($(LOCAL_TYPE),hostapd)
   define Package/wpa-cli/install
@@ -685,6 +725,7 @@ $(eval $(call BuildPackage,hostapd-basic-wolfssl))
 $(eval $(call BuildPackage,hostapd-mini))
 $(eval $(call BuildPackage,hostapd-openssl))
 $(eval $(call BuildPackage,hostapd-wolfssl))
+$(eval $(call BuildPackage,hostapd-pcsc-sim))
 $(eval $(call BuildPackage,wpad))
 $(eval $(call BuildPackage,wpad-mesh-openssl))
 $(eval $(call BuildPackage,wpad-mesh-wolfssl))
@@ -694,6 +735,7 @@ $(eval $(call BuildPackage,wpad-basic-wolfssl))
 $(eval $(call BuildPackage,wpad-mini))
 $(eval $(call BuildPackage,wpad-openssl))
 $(eval $(call BuildPackage,wpad-wolfssl))
+$(eval $(call BuildPackage,wpad-pcsc-sim))
 $(eval $(call BuildPackage,wpa-supplicant))
 $(eval $(call BuildPackage,wpa-supplicant-mesh-openssl))
 $(eval $(call BuildPackage,wpa-supplicant-mesh-wolfssl))
@@ -702,6 +744,7 @@ $(eval $(call BuildPackage,wpa-supplicant-mini))
 $(eval $(call BuildPackage,wpa-supplicant-p2p))
 $(eval $(call BuildPackage,wpa-supplicant-openssl))
 $(eval $(call BuildPackage,wpa-supplicant-wolfssl))
+$(eval $(call BuildPackage,wpa-supplicant-pcsc-sim))
 $(eval $(call BuildPackage,wpa-cli))
 $(eval $(call BuildPackage,hostapd-utils))
 $(eval $(call BuildPackage,hostapd-common))
